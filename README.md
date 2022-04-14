@@ -16,7 +16,7 @@
 
 ### F | 12%pp
 
-- [ ] Fork this repo
+- [+] Fork this repo
 - [ ] Clone -> Now you can push your changes
 - [ ] Install [buf](https://docs.buf.build/introduction) and generate code from [proto](pkg/proto/challenge.proto)
 - [ ] Make gRPC Server base: `main.go` in `cmd/server`, server methods in `pkg/server`
