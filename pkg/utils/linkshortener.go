@@ -17,7 +17,7 @@ func BitlyShortener(link string) (string, error) {
 		return "", errors.New("can't get bitly Oauth token")
 	}
 
-	var data = strings.NewReader(fmt.Sprintf(`{ "long_url": %s }`, link))
+	var data = strings.NewReader(fmt.Sprintf(`{ "long_url": "%v" }`, link))
 	req, err := http.NewRequest("POST", "https://api-ssl.bitly.com/v4/shorten", data)
 	if err != nil {
 		return "", err
@@ -29,8 +29,8 @@ func BitlyShortener(link string) (string, error) {
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
+	if err != nil || resp.StatusCode != 200 {
+		return "", errors.New("may be wrong url or bitly api error")
 	}
 	defer resp.Body.Close()
 

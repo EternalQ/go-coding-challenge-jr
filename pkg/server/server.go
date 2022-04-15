@@ -12,7 +12,10 @@ type ChallengeServer struct {
 
 func (s *ChallengeServer) MakeShortLink(ctx context.Context, link *proto.Link) (*proto.Link, error) {
 	shortLink, err := utils.BitlyShortener(link.Data)
-	return &proto.Link{Data: shortLink}, err
+	if err != nil {
+		return nil, err
+	}
+	return &proto.Link{Data: shortLink}, nil
 }
 
 func (s *ChallengeServer) StartTimer(timer *proto.Timer, stream proto.ChallengeService_StartTimerServer) error {

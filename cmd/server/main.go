@@ -1,15 +1,13 @@
 package main
 
 import (
-	"challenge/pkg/utils"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
+	"challenge/pkg/proto"
+	"challenge/pkg/server"
 	"log"
-	"net/http"
-	"strings"
+	"net"
 
 	"github.com/spf13/viper"
+	"google.golang.org/grpc"
 )
 
 //Configuring env variables
@@ -22,41 +20,21 @@ func configureViper() error {
 	return nil
 }
 
-//testing bitly link shortener
 func main() {
 	if err := configureViper(); err != nil {
 		log.Fatal(err.Error())
 	}
 
-	token, ok := viper.Get("BITLY_OAUTH_TOKEN").(string)
-	if !ok {
-		log.Fatalf("no such env variable")
-	}
+	s := grpc.NewServer()
+	srv := &server.ChallengeServer{}
+	proto.RegisterChallengeServiceServer(s, srv)
 
-	var data = strings.NewReader(`{ "long_url": "https://dev.bitly.com" }`)
-	req, err := http.NewRequest("POST", "https://api-ssl.bitly.com/v4/shorten", data)
+	lis, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", token))
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-
-	resp, err := client.Do(req)
-	if err != nil {
+	if err := s.Serve(lis); err != nil {
 		log.Fatal(err)
 	}
-	defer resp.Body.Close()
-
-	bodyText, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	bitlyResponse := &utils.BitlyResponse{}
-	json.Unmarshal(bodyText, bitlyResponse)
-
-	fmt.Printf("%s\n", bitlyResponse.ShortLink)
 }
