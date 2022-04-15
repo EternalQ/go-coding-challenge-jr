@@ -1,4 +1,4 @@
-package utils
+package shortener
 
 type BitlyResponse struct {
 	ShortLink string `json:"link"`
