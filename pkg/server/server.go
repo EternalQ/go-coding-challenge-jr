@@ -2,7 +2,7 @@ package server
 
 import (
 	"challenge/pkg/proto"
-	"challenge/pkg/utils"
+	"challenge/pkg/shortener"
 	"context"
 )
 
@@ -11,7 +11,7 @@ type ChallengeServer struct {
 }
 
 func (s *ChallengeServer) MakeShortLink(ctx context.Context, link *proto.Link) (*proto.Link, error) {
-	shortLink, err := utils.BitlyShortener(link.Data)
+	shortLink, err := shortener.BitlyShortener(link.Data)
 	if err != nil {
 		return nil, err
 	}
