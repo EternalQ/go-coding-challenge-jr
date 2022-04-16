@@ -5,6 +5,10 @@ import (
 	"challenge/pkg/shortener"
 	"challenge/pkg/timer"
 	"context"
+	"errors"
+	"strings"
+
+	"google.golang.org/grpc/metadata"
 )
 
 type ChallengeServer struct {
@@ -21,18 +25,31 @@ func (s *ChallengeServer) MakeShortLink(ctx context.Context, link *proto.Link) (
 
 func (s *ChallengeServer) StartTimer(ptimer *proto.Timer, stream proto.ChallengeService_StartTimerServer) error {
 	timer := timer.New(ptimer.Name, ptimer.Seconds, ptimer.Frequency)
-	timerChan := timer.Serve()
-	for v := range timerChan {
+
+	pipe := timer.GetPipe()
+
+	for {
+		select {
+		case timer = <-pipe.Timers:
 			stream.Send(&proto.Timer{
-				Name: v.Name,
-				Seconds: v.Seconds,
-				Frequency: v.Frequency,
+				Name:      timer.Name,
+				Seconds:   timer.Seconds,
+				Frequency: timer.Frequency,
 			})
+		case err := <-pipe.Errors:
+			return err
+		}
 	}
-	
-	return nil
 }
 
 func (s *ChallengeServer) ReadMetadata(ctx context.Context, placeholder *proto.Placeholder) (*proto.Placeholder, error) {
-	return &proto.Placeholder{}, nil
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, errors.New("no metadata recived")
+	}
+
+	// Where from i should get key
+	v := md.Get("somekey")
+
+	return &proto.Placeholder{Data: strings.Join(v, ",")}, nil
 }
