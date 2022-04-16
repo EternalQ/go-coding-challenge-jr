@@ -11,7 +11,11 @@ import (
 	"github.com/spf13/viper"
 )
 
-func BitlyShortener(link string) (string, error) {
+type BitlyResponse struct {
+	ShortLink string `json:"link"`
+}
+
+func GetBitlyShorten(link string) (string, error) {
 	token, ok := viper.Get("BITLY_OAUTH_TOKEN").(string)
 	if !ok {
 		return "", errors.New("can't get bitly Oauth token")

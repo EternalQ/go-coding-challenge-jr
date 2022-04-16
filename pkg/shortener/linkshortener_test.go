@@ -33,7 +33,7 @@ func TestBitlyShortener(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			shorten, err := BitlyShortener(tc.link)
+			shorten, err := GetBitlyShorten(tc.link)
 			if err != nil {
 				t.Error(err)
 			}
