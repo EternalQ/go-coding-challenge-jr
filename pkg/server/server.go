@@ -32,9 +32,8 @@ func (s *ChallengeServer) StartTimer(ptimer *proto.Timer, stream proto.Challenge
 		select {
 		case timer = <-pipe.Timers:
 			stream.Send(&proto.Timer{
-				Name:      timer.Name,
-				Seconds:   timer.Seconds,
-				Frequency: timer.Frequency,
+				Name:    timer.Name,
+				Seconds: timer.Seconds,
 			})
 		case err := <-pipe.Errors:
 			return err

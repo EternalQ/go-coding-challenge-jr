@@ -48,9 +48,6 @@ func (timer *Timer) StartTimer() *timerPipe {
 	}
 	timersMap[timer.Name] = pipe
 
-	ticker := time.NewTicker(time.Second * time.Duration(timer.Frequency))
-	defer ticker.Stop()
-
 	// General timer
 	stop := make(chan bool)
 	go func() {
@@ -58,24 +55,29 @@ func (timer *Timer) StartTimer() *timerPipe {
 		stop <- true
 	}()
 
+	ticker := time.NewTicker(time.Second * time.Duration(timer.Frequency))
+
 	// Updating timer info
 	go func() {
+		defer ticker.Stop()
 		for {
 			select {
 			case <-ticker.C:
 				timerResp, err := CheckTimerAPI(timer.Name)
 				if err != nil {
 					pipe.Errors <- err
+					continue
 				}
 
 				timer.Name = timerResp.Name
-				timer.Seconds = timerResp.Seconds
+				timer.Seconds = int64(timerResp.Seconds)
 
 				pipe.Timers <- timer
 			case <-stop:
-				delete(timersMap, timer.Name)
 				close(pipe.Errors)
 				close(pipe.Timers)
+				delete(timersMap, timer.Name)
+				return
 			}
 		}
 	}()

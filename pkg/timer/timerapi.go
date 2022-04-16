@@ -11,8 +11,9 @@ const (
 )
 
 type timerApiResponse struct {
-	Name    string `json:"timer"`
-	Seconds int64  `json:"seconds_remaining"`
+	Error   string  `json:"errorMessage"`
+	Name    string  `json:"timer"`
+	Seconds float64 `json:"seconds_remaining"`
 }
 
 // Create or update API timer
@@ -42,7 +43,7 @@ func CheckTimerAPI(name string) (*timerApiResponse, error) {
 
 	client := &http.Client{}
 	res, err := client.Do(req)
-	if err != nil || res.StatusCode != 200 {
+	if err != nil {
 		return nil, err
 	}
 
