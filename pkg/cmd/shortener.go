@@ -5,7 +5,10 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"challenge/pkg/proto"
+	"context"
 	"fmt"
+	"log"
 
 	"github.com/spf13/cobra"
 )
@@ -16,20 +19,25 @@ var shortenerCmd = &cobra.Command{
 	Short: "Make a long link short",
 	Long:  "Use a Bitly API to make a long link short",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("shortener called")
+		if len(args) != 1 {
+			cmd.PrintErr("not enought arguments")
+			return
+		}
+		startShortener(args[0])
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(shortenerCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// shortenerCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
 	// shortenerCmd.Flags().StringP()
+}
+
+func startShortener(link string) {
+	linkResponse, err := getClient().MakeShortLink(context.Background(), &proto.Link{Data: link})
+	if err!= nil {
+		log.Fatal(err)
+	}
+	
+	fmt.Printf("Short link: %s\n", linkResponse.GetData())
 }

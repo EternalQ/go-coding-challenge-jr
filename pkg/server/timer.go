@@ -8,6 +8,7 @@ type Timer struct {
 	Name      string
 	Seconds   int64
 	Frequency int64
+	Error     string
 }
 
 func New(name string, seconds int64, frequency int64) *Timer {
@@ -46,7 +47,8 @@ func (timer *Timer) StartTimer(b *Broker, s *ChallengeServer) {
 
 				timer.Name = timerResp.Name
 				timer.Seconds = int64(timerResp.Seconds)
-
+				timer.Error = timerResp.Error
+				
 				b.Publish(timer)
 			case <-stop:
 				b.Stop()

@@ -8,6 +8,7 @@ message Timer {
     string name = 1;
     int64 seconds = 2;
     int64 frequency = 3;
+    string error = 4;
 }
 
 message Placeholder {

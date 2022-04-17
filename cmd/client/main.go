@@ -1,6 +1,8 @@
 package main
 
-import "challenge/pkg/cmd"
+import (
+	"challenge/pkg/cmd"
+)
 
 func main() {
 	cmd.Execute()

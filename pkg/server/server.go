@@ -19,7 +19,6 @@ func (s *ChallengeServer) getBroker(ptimer *proto.Timer) *Broker {
 	t := New(ptimer.Name, ptimer.Seconds, ptimer.Frequency)
 
 	b, ok := s.Brokers[t.Name]
-	println(b, ok)
 	if !ok {
 		b = NewBroker()
 		s.Brokers[ptimer.Name] = b
@@ -57,6 +56,7 @@ func (s *ChallengeServer) StartTimer(ptimer *proto.Timer, stream proto.Challenge
 			stream.Send(&proto.Timer{
 				Name:    timer.Name,
 				Seconds: timer.Seconds,
+				Error:   timer.Error,
 			})
 		case err := <-errors:
 			return err
