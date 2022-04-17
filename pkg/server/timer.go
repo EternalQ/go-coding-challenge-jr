@@ -1,4 +1,4 @@
-package timer
+package server
 
 import (
 	"time"
@@ -10,15 +10,6 @@ type Timer struct {
 	Frequency int64
 }
 
-type timerPipe struct {
-	Timers chan *Timer
-	Errors chan error
-}
-
-var (
-	timersMap = make(map[string]*timerPipe)
-)
-
 func New(name string, seconds int64, frequency int64) *Timer {
 	return &Timer{
 		Name:      name,
@@ -27,26 +18,9 @@ func New(name string, seconds int64, frequency int64) *Timer {
 	}
 }
 
-// Return channel with timer values if exists
-// Create new otherwise
-func (timer *Timer) GetPipe() *timerPipe {
-	pipe, ok := timersMap[timer.Name]
-	if !ok {
-		pipe = timer.StartTimer()
-	}
-
-	return pipe
-}
-
 // Start timer goroutine
-func (timer *Timer) StartTimer() *timerPipe {
+func (timer *Timer) StartTimer(b *Broker, s *ChallengeServer) {
 	StartTimerAPI(timer.Name, timer.Seconds)
-
-	pipe := &timerPipe{
-		Timers: make(chan *Timer),
-		Errors: make(chan error),
-	}
-	timersMap[timer.Name] = pipe
 
 	// General timer
 	stop := make(chan bool)
@@ -57,30 +31,27 @@ func (timer *Timer) StartTimer() *timerPipe {
 
 	ticker := time.NewTicker(time.Second * time.Duration(timer.Frequency))
 
-	// Updating timer info
+	// Timer updater
 	go func() {
 		defer ticker.Stop()
+		defer delete(s.Brokers, timer.Name)
 		for {
 			select {
 			case <-ticker.C:
 				timerResp, err := CheckTimerAPI(timer.Name)
 				if err != nil {
-					pipe.Errors <- err
+					b.Error(err)
 					continue
 				}
 
 				timer.Name = timerResp.Name
 				timer.Seconds = int64(timerResp.Seconds)
 
-				pipe.Timers <- timer
+				b.Publish(timer)
 			case <-stop:
-				close(pipe.Errors)
-				close(pipe.Timers)
-				delete(timersMap, timer.Name)
+				b.Stop()
 				return
 			}
 		}
 	}()
-
-	return pipe
 }

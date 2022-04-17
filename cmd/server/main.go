@@ -26,7 +26,9 @@ func main() {
 	}
 
 	s := grpc.NewServer()
-	srv := &server.ChallengeServer{}
+	srv := &server.ChallengeServer{
+		Brokers: make(map[string]*server.Broker),
+	}
 	proto.RegisterChallengeServiceServer(s, srv)
 
 	lis, err := net.Listen("tcp", ":8080")

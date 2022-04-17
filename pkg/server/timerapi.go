@@ -1,4 +1,4 @@
-package timer
+package server
 
 import (
 	"encoding/json"
